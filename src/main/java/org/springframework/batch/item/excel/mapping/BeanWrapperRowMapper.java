@@ -155,7 +155,7 @@ public class BeanWrapperRowMapper<T> extends DefaultPropertyEditorRegistrar impl
      */
     @Override
     public T mapRow(RowSet rs) throws BindException {
-        if (!assertRow(rs)) {
+        if (! assertRow(rs)) {
             return null;
         }
         T copy = getBean();
@@ -169,6 +169,7 @@ public class BeanWrapperRowMapper<T> extends DefaultPropertyEditorRegistrar impl
 
     protected boolean assertRow(RowSet rs) {
         return true;
+
     }
 
     /**
