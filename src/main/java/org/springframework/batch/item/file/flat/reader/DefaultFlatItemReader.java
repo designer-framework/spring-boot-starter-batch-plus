@@ -1,8 +1,8 @@
 package org.springframework.batch.item.file.flat.reader;
 
-import com.wisdom.common.utils.spring.context.SpringContextUtil;
-import com.wisdom.common.utils.string.StringUtils;
+
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -53,9 +53,9 @@ public class DefaultFlatItemReader<T> extends FlatFileItemReader<T> {
 
     public FieldSetMapper<T> getFieldSetMapper(Class<? extends T> clazz) {
         BeanWrapperFieldSetMapper<T> tBeanWrapperFieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        ApplicationContext applicationContext = Objects.requireNonNull(SpringContextUtil.getApplicationContext());
+        ApplicationContext applicationContext = Objects.requireNonNull(SpringContextUtils1.applicationContext);
         tBeanWrapperFieldSetMapper.setBeanFactory(applicationContext);
-        String beanName = StringUtils.replaceFirstChar(ClassUtils.getShortName(clazz));
+        String beanName = replaceFirstChar(ClassUtils.getShortName(clazz));
         try {
             applicationContext.getBean(beanName);
         } catch (BeansException e) {
@@ -101,4 +101,19 @@ public class DefaultFlatItemReader<T> extends FlatFileItemReader<T> {
     public String getDelimiter() {
         return ",";
     }
+
+    private String replaceFirstChar(String str) {
+        if (StringUtils.isNotEmpty(str)) {
+            char oldChar = str.charAt(0);
+            if (oldChar >= 'A' && oldChar <= 'Z') {
+                return str.replace(oldChar, (char) (oldChar + 32));
+            } else if (oldChar >= 'a' && oldChar <= 'z') {
+                return str.replace(oldChar, (char) (oldChar - 32));
+            } else {
+                return str;
+            }
+        }
+        return str;
+    }
+
 }

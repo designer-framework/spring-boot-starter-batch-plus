@@ -155,6 +155,9 @@ public class BeanWrapperRowMapper<T> extends DefaultPropertyEditorRegistrar impl
      */
     @Override
     public T mapRow(RowSet rs) throws BindException {
+        if (!assertRow(rs)) {
+            return null;
+        }
         T copy = getBean();
         DataBinder binder = createBinder(copy);
         binder.bind(new MutablePropertyValues(getBeanProperties(copy, rs.getProperties())));
@@ -162,6 +165,10 @@ public class BeanWrapperRowMapper<T> extends DefaultPropertyEditorRegistrar impl
             throw new BindException(binder.getBindingResult());
         }
         return copy;
+    }
+
+    protected boolean assertRow(RowSet rs) {
+        return true;
     }
 
     /**

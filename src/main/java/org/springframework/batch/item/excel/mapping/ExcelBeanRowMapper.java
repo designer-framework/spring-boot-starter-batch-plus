@@ -1,23 +1,28 @@
 package org.springframework.batch.item.excel.mapping;
 
-import com.wisdom.common.utils.reflect.ReflectUtils;
-import com.wisdom.common.utils.time.DateTimeUtils;
+
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.batch.item.excel.RowMapper;
 import org.springframework.batch.item.excel.annotation.ColumnHeader;
 import org.springframework.batch.item.excel.annotation.DateTimeFormat;
 import org.springframework.batch.item.excel.support.rowset.RowSet;
+import org.springframework.cglib.beans.BeanMap;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,11 +36,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Description: excel数据转换成实体类，建议使用
  */
 @Log4j2
-public class ExcelBeanRowMapper<T> implements RowMapper<T> {
+public abstract class ExcelBeanRowMapper<T> implements RowMapper<T> {
 
-    /**
+    /*
+    */
+/**
      * MODEL对应的EXCEL头信息
-     */
+     *//*
+
     private static final Map<String, String[]> CLASS_EXCEL_HEADER_MAP = new ConcurrentHashMap<>(4);
 
 
@@ -43,10 +51,12 @@ public class ExcelBeanRowMapper<T> implements RowMapper<T> {
 
     private Integer shadowSkipConditionRow;
 
-    /**
+    */
+/**
      * @param targetClass            被映射成集合的对象
      * @param shadowSkipConditionRow 判断改行是否为空，为空则不是有效数据
-     */
+     *//*
+
     @NonNull
     public ExcelBeanRowMapper(Class<? extends T> targetClass, Integer shadowSkipConditionRow) {
         this.targetClass = targetClass;
@@ -124,7 +134,29 @@ public class ExcelBeanRowMapper<T> implements RowMapper<T> {
                 throw new ParseException(String.format("Excel第%s行数据转换失败:class: %s, field: %s,  fieldValue: %s", rs.getCurrentRowIndex(), targetClass.getName(), field.getName(), rowData[i]), rs.getCurrentRowIndex());
             }
         }
-        return ReflectUtils.mapToBean(map, targetClass);
+        return mapToBean(map, targetClass);
+    }
+
+    public static <T> T mapToBean(Map<String, Object> map, Class<T> clazz) {
+        T bean = newInstance(clazz);
+        BeanMap.create(bean).putAll(map);
+        return bean;
+    }
+
+    private static <T> T newInstance(Class<T> clazz) {
+        try {
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(String.format("实例化对象时出现错误,请尝试给%s添加无参的构造方法", clazz.getName()), e);
+        }
+    }
+
+    private static LocalDateTime parseLongToDateTime(Long longDateTime) {
+        Date dateTime = new Date(longDateTime);
+        Instant instant = dateTime.toInstant();
+        return LocalDateTime.ofInstant(instant, DEFAULT_ZONE);
     }
 
 
@@ -145,4 +177,5 @@ public class ExcelBeanRowMapper<T> implements RowMapper<T> {
         }
 
     }
+*/
 }
