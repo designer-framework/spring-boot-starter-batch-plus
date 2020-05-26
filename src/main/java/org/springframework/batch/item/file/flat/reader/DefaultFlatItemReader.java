@@ -1,6 +1,5 @@
 package org.springframework.batch.item.file.flat.reader;
 
-
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -11,7 +10,7 @@ import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.LineTokenizer;
 import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -29,7 +28,6 @@ import java.util.Objects;
 @Log4j2
 public class DefaultFlatItemReader<T> extends FlatFileItemReader<T> {
 
-
     /**
      * @param resource   源文件
      * @param clazz
@@ -43,21 +41,20 @@ public class DefaultFlatItemReader<T> extends FlatFileItemReader<T> {
     }
 
     public LineMapper<T> getLineMapper(DefaultLineMapper<T> tDefaultLineMapper, Class<? extends T> clazz) {
-        Assert.notNull(tDefaultLineMapper, "");
-        Assert.notNull(clazz, "");
+        Assert.notNull(tDefaultLineMapper, "tDefaultLineMapper");
+        Assert.notNull(clazz, "clazz");
         tDefaultLineMapper.setLineTokenizer(getDelimitedLineTokenizer(clazz));
         tDefaultLineMapper.setFieldSetMapper(getFieldSetMapper(clazz));
         return tDefaultLineMapper;
     }
 
-
     public FieldSetMapper<T> getFieldSetMapper(Class<? extends T> clazz) {
         BeanWrapperFieldSetMapper<T> tBeanWrapperFieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        ApplicationContext applicationContext = Objects.requireNonNull(SpringContextUtils1.applicationContext);
-        tBeanWrapperFieldSetMapper.setBeanFactory(applicationContext);
+        BeanFactory beanFactory = Objects.requireNonNull(BeanFactoryImport.beanFactory);
+        tBeanWrapperFieldSetMapper.setBeanFactory(BeanFactoryImport.beanFactory);
         String beanName = replaceFirstChar(ClassUtils.getShortName(clazz));
         try {
-            applicationContext.getBean(beanName);
+            Assert.isTrue(beanFactory.getBean(beanName) != null, "");
         } catch (BeansException e) {
             log.error("查找Bean失败,可能" + beanName + "未注入到容器中", e);
             throw new RuntimeException(e);
